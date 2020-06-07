@@ -3,7 +3,7 @@ import itertools
 import unittest
 
 
-class TestPhenotypeMap(unittest.TestCase):
+class TestFlowers(unittest.TestCase):
     def setUp(self):
         self.flower_types_and_colors = {
             "cosmo": ["red", "yellow", "white", "orange", "pink", "black"],

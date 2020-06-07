@@ -1,7 +1,13 @@
+"""
+Modeling Animal Crossing Flowers for Bayesian Stats on determining genotype
+Data taken from https://docs.google.com/spreadsheets/d/11pRCX8G0xGizSYWgVhoUSu7pE-MV7AOprBcgSY1whB4/
+"""
+
+import click
+import itertools
 import pandas as pd
 import random
 
-# Data taken from https://docs.google.com/spreadsheets/d/11pRCX8G0xGizSYWgVhoUSu7pE-MV7AOprBcgSY1whB4/
 genotype_map = {
     "cosmo": {
         (0, 0, 0): "white",
@@ -314,52 +320,56 @@ class Flower:
             self.get_binary_gene(parent_2)
         )
 
+    def all_possible_genotypes(self, phenotype):
+        return [
+            FlowerInstance(self.flower_type, genes)
+            for genes, color in self.genotype_map.items()
+            if color == phenotype
+        ]
+
+    def create(self, genotype):
+        return FlowerInstance(self.flower_type, genotype)
+
+    def __init__(self, flower_type):
+        self.flower_type = flower_type
+        self.genotype_map = genotype_map[flower_type]
+        self.seed_genotypes = seed_genotypes[flower_type]
+
 
 class FlowerInstance(Flower):
     """
     Instance of an Animal Crossing flower
-    Must subclass and implement a flower_type
     """
 
-    def __str__(self):
-        return "{} ({})".format(self.genotype, self.phenotype)
-
-    def __repr__(self):
-        return "{} ({})".format(self.genotype, self.phenotype)
-
-    @classmethod
-    def create(cls, genes):
-        flower_type_mapping = {
-            # 'cosmo': CosmoInstance,
-            "hyacinth": HyacinthInstance,
-            # 'lily': LilyInstance,
-            # 'mum': MumInstance,
-            # 'pansy': PansyInstance,
-            # 'rose': RoseInstance,
-            # 'tulip': TulipInstance,
-            # 'windflower': WindflowerInstance,
-        }
-        return flower_type_mapping[cls.flower_type](*genes)
-
-    def breed(self, other):
-        """
-        Must only breed two FlowerInstances of the same Flower Type
-        """
-        return self.create(
-            *[
-                self.select_allele(p1, p2)
-                for p1, p2 in zip(self.genotype, other.genotype)
-            ]
-        )
+    def __init__(self, flower_type, genotype):
+        super().__init__(flower_type)
+        self.genotype = genotype
 
     @property
     def phenotype(self):
-        return self.genotype_phenotype_map[self.genotype]
+        return self.genotype_map[self.genotype]
+
+    def __str__(self):
+        return "{} ({})".format(self.phenotype, self.genotype)
+
+    def __repr__(self):
+        return "{} ({})".format(self.phenotype, self.genotype)
+
+    def breed(self, other):
+        assert self.flower_type == other.flower_type, "Two flowers of different types cannot breed"
+        child_genes = tuple([
+            self.select_allele(parent_1, parent_2)
+            for parent_1, parent_2 in zip(self.genotype, other.genotype)
+            ])
+        return FlowerInstance(flower_type=self.flower_type, genotype=child_genes)
+
 
     def all_children_with_weights(self, other):
+        assert self.flower_type == other.flower_type, "Two flowers of different types cannot breed"
         child_genes_and_weights = []
         for p1_allele, p2_allele in zip(self.genotype, other.genotype):
             allele_values = {}
+            # Calculate a punnet square for each pair of alleles in the genotype
             for g1 in self.get_binary_gene(p1_allele):
                 for g2 in self.get_binary_gene(p2_allele):
                     child_allele = g1 + g2
@@ -369,107 +379,98 @@ class FlowerInstance(Flower):
                         allele_values[child_allele] = 0.25
             child_genes_and_weights.append(allele_values)
 
-        # TODO This won't work for the Rose
-        r_weights, y_weights, w_weights = child_genes_and_weights
         all_children = {}
-        for r_gene, p_r_gene in r_weights.items():
-            for y_gene, p_y_gene in y_weights.items():
-                for w_gene, p_w_gene in w_weights.items():
-                    p_gene = p_r_gene * p_y_gene * p_w_gene
-                    try:
-                        all_children[(r_gene, y_gene, w_gene)] += p_gene
-                    except KeyError:
-                        all_children[(r_gene, y_gene, w_gene)] = p_gene
-        all_children = {self.create(k): v for k, v in all_children.items()}
+        for child_genotype in itertools.product(*[gene.keys() for gene in child_genes_and_weights]):
+            child_flower = self.create(child_genotype)
+            p_gene = 1.0
+            for i in range(len(child_genotype)):
+                p_allele = child_genes_and_weights[i][child_genotype[i]]
+                p_gene *= p_allele
+            all_children[child_flower] = p_gene
+
         return all_children
 
 
-class HyacinthMixin:
-    def all_possible_genotypes(cls, phenotype):
-        return [
-            HyacinthInstance.create(k)
-            for k, v in self.genotype_phenotype_map.items()
-            if v == phenotype
-        ]
-
-
-class HyacinthInstance(FlowerInstance, HyacinthMixin):
-    def __init__(self, r_gene, y_gene, w_gene):
-        """
-        :param genotype: tuple of trinary values representing the
-        genes of the hyacinth.
-        """
-        self.genotype = (r_gene, y_gene, w_gene)
-
-
-def simulate_hyacinth_breeding():
-    f1 = HyacinthInstance(*HyacinthMixin.seed_white)
-    f2 = HyacinthInstance(*HyacinthMixin.seed_white)
-    n = 100
-    print("Simulating 100 breedings between seed white and seed white Hyacinths")
+def simulate_breeding(flower_type, genotype_1, genotype_2, n):
+    f1 = ac_flowers.FlowerInstance(flower_type, genotype_1)
+    f2 = ac_flowers.FlowerInstance(flower_type, genotype_2)
+    click.echo("Simulating {} breedings between {} {} and {}".format(
+        n, flower_type, genotype_1, genotype_2))
     results = [f1.breed(f2) for _ in range(n)]
     results_df = pd.DataFrame([(c.phenotype, c.genotype) for c in results])
     results_df.columns = ["phenotype", "genotype"]
     grouped = results_df.groupby("phenotype")["genotype"].value_counts()
-    print(grouped)
+    click.echo(grouped)
 
 
-def hyacinth_genotypes_for_phenotype(color):
-    hyacinth = HyacinthMixin(color)
-    possible = hyacinth.all_possible_genotypes()
-    print(
-        "A random {} hyacinth could have the following possible genotypes:".format(
-            color
-        )
-    )
-    print([p.genotype for p in possible])
-
-
-def simulate_hyacinth_matings_from_phenotype(color1, color2):
-    print(
-        "Simulating the mating of 100 random pairs of {} and {} hyacinths, 100 times each.".format(
-            color1, color2
-        )
-    )
-    possible_color1 = HyacinthColor(color1).all_possible_genotypes()
-    possible_color2 = HyacinthColor(color2).all_possible_genotypes()
-    mating_results = {}
-    for _ in range(100):
-        parent_1 = random.choice(possible_color1)
-        parent_2 = random.choice(possible_color2)
-        key = tuple(sorted((parent_1.genotype, parent_2.genotype)))
-        mating_results.setdefault(key, [])
-        for _ in range(100):
-            mating_results[key].append(parent_1.breed(parent_2))
-
-    print("______")
-    for k, v in mating_results.items():
-        print("results for mating pair {}".format(k))
-        results_df = pd.DataFrame([(c.phenotype, c.genotype) for c in v])
-        results_df.columns = ["phenotype", "genotype"]
-        grouped = results_df.groupby("phenotype")["genotype"].value_counts()
-        print(grouped)
-        print("______")
-
-
-def find_all_hyacinth_phenotype_combinations(color1, color2):
-    possible_color1 = HyacinthColor(color1).all_possible_genotypes()
-    possible_color2 = HyacinthColor(color2).all_possible_genotypes()
+def find_all_phenotype_combinations(flower_type, color1, color2):
+    flower = ac_flowers.Flower(flower_type)
+    possible_color1 = flower.all_possible_genotypes(color1)
+    possible_color2 = flower.all_possible_genotypes(color2)
     for parent_1 in possible_color1:
         for parent_2 in possible_color2:
             results = parent_1.all_children_with_weights(parent_2)
-            print("Results of breeding parents {} and {}".format(parent_1, parent_2))
+            click.echo("Results of breeding parents {} and {}".format(parent_1, parent_2))
             for k, v in results.items():
-                print(
+                click.echo(
                     "{:12}{:7}{:6.2f}%".format(repr(k.genotype), k.phenotype, v * 100)
                 )
 
 
-if __name__ == "__main__":
-    # simulate_matings_from_genotype()
-    # simulate_matings_from_phenotype('pink', 'pink')
-    # seed_red = HyacinthInstance(*Hyacinth.seed_red)
-    # seed_yellow = HyacinthInstance(*Hyacinth.seed_yellow)
-    # results = seed_red.all_children_with_weights(seed_yellow)
-    # print(results)
-    find_all_hyacinth_phenotype_combinations("purple", "purple")
+def simulate_breeding_from_phenotype(flower_type, color1, color2, n_pairs, n_breedings):
+    click.echo(
+        "Simulating the breeding of {} random pairs of {} and {} {}, {} times each.".format(
+            n_pairs, color1, color2, flower_type, n_breedings
+    ))
+    flower = ac_flowers.Flower(flower_type)
+    possible_color1 = flower.all_possible_genotypes(color1)
+    possible_color2 = flower.all_possible_genotypes(color2)
+    results = {}
+    for _ in range(n_pairs):
+        parent_1 = random.choice(possible_color1)
+        parent_2 = random.choice(possible_color2)
+        key = tuple(sorted((parent_1.genotype, parent_2.genotype)))
+        results.setdefault(key, [])
+        for _ in range(100):
+            results[key].append(parent_1.breed(parent_2))
+
+    click.echo("______")
+    for k, v in results.items():
+        click.echo("results for breeding pair {}".format(k))
+        results_df = pd.DataFrame([(c.phenotype, c.genotype) for c in v])
+        results_df.columns = ["phenotype", "genotype"]
+        grouped = results_df.groupby("phenotype")["genotype"].value_counts()
+        click.echo(grouped)
+        click.echo("______")
+
+
+def combinations_from_seed(flower_type, generations=1):
+    click.echo("Running report on starting from seeds with {}".format(flower_type))
+    flower = ac_flowers.Flower(flower_type)
+    starting_flowers = [flower.create(genes) for genes in flower.seed_genotypes.values()]
+
+    available_flowers = starting_flowers
+    for generation in range(generations):
+        click.echo("Calculating offspring for generation {}".format(generation))
+        current_generation_flowers = []
+        for parent_1, parent_2 in itertools.combinations_with_replacement(available_flowers, 2):
+            click.echo("Possible children of {} and {}:".format(parent_1, parent_2))
+            offspring = parent_1.all_children_with_weights(parent_2)
+            for k, v in offspring.items():
+                click.echo(
+                    "{:12}{:7}{:6.2f}%".format(repr(k.genotype), k.phenotype, v * 100)
+                )
+            current_generation_flowers.extend(offspring.keys())
+        available_flowers.extend(current_generation_flowers)
+
+
+def genotypes_for_phenotype(flower_type, color):
+    flower = ac_flowers.Flower(flower_type)
+    possible = flower.all_possible_genotypes(color)
+    click.echo(
+        "A random {} {} could have the following possible genotypes:".format(
+            color, flower_type
+        )
+    )
+    for p in possible:
+        click.echo(p)
