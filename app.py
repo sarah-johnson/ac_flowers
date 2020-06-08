@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, render_template
 app = Flask(__name__)
+
 
 @app.route("/")
 def index():
-    return "Hello world!"
+    return render_template("home.html", thing_to_say = 'hello')
 
 
 if __name__ == '__main__':
