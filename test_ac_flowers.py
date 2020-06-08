@@ -71,3 +71,18 @@ class TestFlowers(unittest.TestCase):
                     "Incorrect seed genotype for {}".format(flower),
                 )
                 self.assertTrue(set(seed_genotype).issubset({0, 1, 2}))
+
+    def test_child_color_probability(self):
+        rose = ac_flowers.Flower('rose')
+        result = rose.child_color_probability(rose.seed_genotypes['red'], rose.seed_genotypes['white'], 'pink')
+        self.assertEqual(result, 0.50)
+
+        windflower = ac_flowers.Flower('windflower')
+        result = windflower.child_color_probability(
+            windflower.seed_genotypes['red'], windflower.seed_genotypes['orange'], 'pink')
+        self.assertEqual(result, 1.0)
+
+        tulip = ac_flowers.Flower('tulip')
+        result = tulip.child_color_probability(
+            tulip.seed_genotypes['yellow'], tulip.seed_genotypes['white'], 'black')
+        self.assertEqual(result, 0.0)

@@ -330,6 +330,22 @@ class Flower:
     def create(self, genotype):
         return FlowerInstance(self.flower_type, genotype)
 
+    def child_color_probability(self, parent1_genotype, parent2_genotype, child_color):
+        """
+        Returns the probability of a certain offspring color from two parents
+        of known genotype
+        """
+        parent1 = self.create(parent1_genotype)
+        parent2 = self.create(parent2_genotype)
+        children_with_weights = parent1.all_children_with_weights(parent2)
+        child_colors = {}
+        for child_flower, p in children_with_weights.items():
+            try:
+                child_colors[child_flower.phenotype] += p
+            except KeyError:
+                child_colors[child_flower.phenotype] = p
+        return child_colors.get(child_color, 0)
+
     def __init__(self, flower_type):
         self.flower_type = flower_type
         self.genotype_map = genotype_map[flower_type]
@@ -392,8 +408,8 @@ class FlowerInstance(Flower):
 
 
 def simulate_breeding(flower_type, genotype_1, genotype_2, n):
-    f1 = ac_flowers.FlowerInstance(flower_type, genotype_1)
-    f2 = ac_flowers.FlowerInstance(flower_type, genotype_2)
+    f1 = FlowerInstance(flower_type, genotype_1)
+    f2 = FlowerInstance(flower_type, genotype_2)
     click.echo("Simulating {} breedings between {} {} and {}".format(
         n, flower_type, genotype_1, genotype_2))
     results = [f1.breed(f2) for _ in range(n)]
@@ -404,7 +420,7 @@ def simulate_breeding(flower_type, genotype_1, genotype_2, n):
 
 
 def find_all_phenotype_combinations(flower_type, color1, color2):
-    flower = ac_flowers.Flower(flower_type)
+    flower = Flower(flower_type)
     possible_color1 = flower.all_possible_genotypes(color1)
     possible_color2 = flower.all_possible_genotypes(color2)
     for parent_1 in possible_color1:
@@ -422,7 +438,7 @@ def simulate_breeding_from_phenotype(flower_type, color1, color2, n_pairs, n_bre
         "Simulating the breeding of {} random pairs of {} and {} {}, {} times each.".format(
             n_pairs, color1, color2, flower_type, n_breedings
     ))
-    flower = ac_flowers.Flower(flower_type)
+    flower = Flower(flower_type)
     possible_color1 = flower.all_possible_genotypes(color1)
     possible_color2 = flower.all_possible_genotypes(color2)
     results = {}
@@ -446,7 +462,7 @@ def simulate_breeding_from_phenotype(flower_type, color1, color2, n_pairs, n_bre
 
 def combinations_from_seed(flower_type, generations=1):
     click.echo("Running report on starting from seeds with {}".format(flower_type))
-    flower = ac_flowers.Flower(flower_type)
+    flower = Flower(flower_type)
     starting_flowers = [flower.create(genes) for genes in flower.seed_genotypes.values()]
 
     available_flowers = starting_flowers
@@ -465,7 +481,7 @@ def combinations_from_seed(flower_type, generations=1):
 
 
 def genotypes_for_phenotype(flower_type, color):
-    flower = ac_flowers.Flower(flower_type)
+    flower = Flower(flower_type)
     possible = flower.all_possible_genotypes(color)
     click.echo(
         "A random {} {} could have the following possible genotypes:".format(
@@ -474,3 +490,38 @@ def genotypes_for_phenotype(flower_type, color):
     )
     for p in possible:
         click.echo(p)
+
+
+def bayes(flower_type, color1, color2, observed_children_colors=[]):
+    flower = Flower(flower_type)
+    possible_parent1 = flower.all_possible_genotypes(color1)
+    possible_parent2 = flower.all_possible_genotypes(color2)
+
+    priors = {}
+    p_parent_pair = 1.0/(len(possible_parent1) * len(possible_parent2))
+    for p1 in possible_parent1:
+        for p2 in possible_parent2:
+            key = tuple(sorted((p1.genotype, p2.genotype)))
+            try:
+                priors[key] += p_parent_pair
+            except KeyError:
+                priors[key] = p_parent_pair
+
+    posteriors = priors
+    for child_color in observed_children_colors:
+        event_probabilities = {}
+
+        for key, p_prior in priors.items():
+            p1_genotype, p2_genotype = key
+            p_child = flower.child_color_probability(p1_genotype, p2_genotype, child_color)
+            event_probabilities[key] = p_child
+            posteriors[key] *= p_child
+
+        posteriors = {k: v/sum(posteriors.values()) for k, v in posteriors.items()}
+
+    click.echo("Given {} with parent phenotypes {} {} and known offspring {}, the following genotypes "
+        "and probabilities are assigned:".format(flower_type, color1, color2, observed_children_colors))
+    for k, v in posteriors.items():
+        if v == 0:
+            continue
+        click.echo("{}: {:.2f}%".format(k, v*100))
