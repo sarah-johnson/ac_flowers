@@ -1,0 +1,7 @@
+# Blanket ignore everything by default
+*
+
+# Whitelist files and folders that should be in the container
+!ac_flowers.py
+!app.py
+!requirements.txt
