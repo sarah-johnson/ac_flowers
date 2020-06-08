@@ -512,7 +512,8 @@ def simulate_breeding_from_phenotype(flower_type, color1, color2, n_pairs, n_bre
 
     click.echo("______")
     for k, v in results.items():
-        click.echo("results for breeding pair {}".format(k))
+        p1, p2 = [flower.create(genotype) for genotype in k]
+        click.echo("results for breeding pair {} and {}".format(p1, p2))
         results_df = pd.DataFrame([(c.phenotype, c.genotype) for c in v])
         results_df.columns = ["phenotype", "genotype"]
         grouped = results_df.groupby("phenotype")["genotype"].value_counts()
