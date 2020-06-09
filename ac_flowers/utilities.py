@@ -1,4 +1,7 @@
 import click
+import itertools
+import pandas as pd
+import random
 
 from ac_flowers.flower import Flower, FlowerInstance
 

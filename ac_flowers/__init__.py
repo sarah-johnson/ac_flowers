@@ -8,7 +8,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'ac_flowers.sqlite'),
     )
 
     if test_config is None:
@@ -28,5 +28,8 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return render_template("home.html", thing_to_say = 'hello')
+
+    from . import db
+    db.init_app(app)
 
     return app

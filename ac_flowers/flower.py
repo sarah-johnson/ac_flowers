@@ -4,7 +4,6 @@ Data taken from https://docs.google.com/spreadsheets/d/11pRCX8G0xGizSYWgVhoUSu7p
 """
 
 import itertools
-import pandas as pd
 import random
 
 all_flowers_genotype_map = {
