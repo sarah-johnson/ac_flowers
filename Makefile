@@ -7,4 +7,6 @@ docker-build:
 docker-run: docker-build
 	docker run --rm \
 	-p 5000:5000 \
+	--env FLASK_ENV=development \
+	--env FLASK_APP=ac_flowers \
 	${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}

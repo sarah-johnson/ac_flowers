@@ -2,7 +2,7 @@
 *
 
 # Whitelist files and folders that should be in the container
-!ac_flowers.py
-!app.py
-!requirements.txt
+!ac_flowers
+!static
 !templates
+!requirements.txt

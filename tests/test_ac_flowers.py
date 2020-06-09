@@ -1,6 +1,7 @@
-import ac_flowers
 import itertools
 import unittest
+
+from ac_flowers.flower import Flower, FlowerInstance, all_flowers_genotype_map, seed_genotypes
 
 
 class TestFlowers(unittest.TestCase):
@@ -27,15 +28,15 @@ class TestFlowers(unittest.TestCase):
 
     def test_all_flowers_defined(self):
         self.assertListEqual(
-            list(ac_flowers.genotype_map), list(self.flower_types_and_colors),
+            list(all_flowers_genotype_map), list(self.flower_types_and_colors),
         )
 
     def test_each_flower_defines_all_genotypes(self):
-        for flower, genotype_map in ac_flowers.genotype_map.items():
+        for flower, genotype_map in all_flowers_genotype_map.items():
             n = 4 if flower == "rose" else 3
-            possible_genotypes = [i for i in itertools.product(range(3), repeat=n)]
-            self.assertListEqual(
-                list(genotype_map),
+            possible_genotypes = {i for i in itertools.product(range(3), repeat=n)}
+            self.assertSetEqual(
+                set(genotype_map),
                 possible_genotypes,
                 "Incorrect genotypes for {}".format(flower),
             )
@@ -48,7 +49,7 @@ class TestFlowers(unittest.TestCase):
 
     def test_seed_genotypes(self):
         for flower, seed_data in self.flower_types_and_colors.items():
-            seed_data = ac_flowers.seed_genotypes[flower]
+            seed_data = seed_genotypes[flower]
             seed_colors = {"red", "white"}
 
             if flower == "windflower":
@@ -73,13 +74,13 @@ class TestFlowers(unittest.TestCase):
                 self.assertTrue(set(seed_genotype).issubset({0, 1, 2}))
 
     def test_child_color_probability(self):
-        rose = ac_flowers.Flower("rose")
+        rose = Flower("rose")
         result = rose.child_color_probability(
             rose.seed_genotypes["red"], rose.seed_genotypes["white"], "pink"
         )
         self.assertEqual(result, 0.50)
 
-        windflower = ac_flowers.Flower("windflower")
+        windflower = Flower("windflower")
         result = windflower.child_color_probability(
             windflower.seed_genotypes["red"],
             windflower.seed_genotypes["orange"],
@@ -87,7 +88,7 @@ class TestFlowers(unittest.TestCase):
         )
         self.assertEqual(result, 1.0)
 
-        tulip = ac_flowers.Flower("tulip")
+        tulip = Flower("tulip")
         result = tulip.child_color_probability(
             tulip.seed_genotypes["yellow"], tulip.seed_genotypes["white"], "black"
         )
