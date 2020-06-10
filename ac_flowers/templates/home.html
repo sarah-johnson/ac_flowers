@@ -1,7 +1,12 @@
-<html>
-    <body>
-    <h1>
-     Flask says {{ thing_to_say }}   
-     </h1>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Welcome!{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <h1>Choose from one of these flower types:</h1>
+    <ul>{% for flower in flowers %}
+       <li> {{ flower }} </li>
+    {% endfor %}</ul>
+{% endblock %}

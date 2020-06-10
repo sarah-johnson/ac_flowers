@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template
 
+from .flower import all_flowers_genotype_map
 
 def create_app(test_config=None):
     # create and configure the app
@@ -25,8 +26,8 @@ def create_app(test_config=None):
         pass
 
     # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return render_template("home.html", thing_to_say = 'hello')
+    @app.route('/')
+    def home():
+        return render_template("home.html", flowers=all_flowers_genotype_map)
 
     return app
