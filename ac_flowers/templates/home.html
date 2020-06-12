@@ -1,12 +1,21 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>AC Flowers</title>
+</head>
+<body>
+  <h1>AC Flowers</h1>
+  <ul>{% for nav_option in ["explore", "bayes", "simulate"] %}
+    <li><a href="#{{ nav_option }}">{{ nav_option }}</a></li>
+  {% endfor %}</ul>
 
-{% block header %}
-  <h1>{% block title %}Welcome!{% endblock %}</h1>
-{% endblock %}
+  <div id="app">
+  </div>
 
-{% block content %}
-    <h1>Choose from one of these flower types:</h1>
-    <ul>{% for flower in flowers %}
-       <li> {{ flower }} </li>
-    {% endfor %}</ul>
-{% endblock %}
+  <script src="{{ url_for('static', filename='js/route.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/router.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

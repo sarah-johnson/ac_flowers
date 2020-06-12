@@ -3,7 +3,7 @@ import itertools
 import pandas as pd
 import random
 
-from ac_flowers.flower import Flower, FlowerInstance
+from .flower import Flower, FlowerInstance
 
 
 def simulate_breeding(flower_type, genotype_1, genotype_2, n):
