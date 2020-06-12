@@ -6,16 +6,19 @@
   <title>AC Flowers</title>
 </head>
 <body>
-  <h1>AC Flowers</h1>
-  <ul>{% for nav_option in ["explore", "bayes", "simulate"] %}
-    <li><a href="#{{ nav_option }}">{{ nav_option }}</a></li>
-  {% endfor %}</ul>
-
+  <h1>Animal Crossing New Horizons Flowers</h1>
+  <p>Data Taken from <a href="https://docs.google.com/spreadsheets/d/11pRCX8G0xGizSYWgVhoUSu7pE-MV7AOprBcgSY1whB4/">ACNH/ACNL Flower Genes</a></p>
+  <div id="nav">
+    <h2>Select a flower:</h2>
+    <select id="flower-select">
+      <option>---</option>
+    </select>
+  </div>
   <div id="app">
+    <h2 id="current-flower"></h2>
+    <div id="flower-genetics-display"></div>
   </div>
 
-  <script src="{{ url_for('static', filename='js/route.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/router.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

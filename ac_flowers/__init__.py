@@ -2,7 +2,6 @@ import os
 
 from flask import Flask, render_template
 
-from .flower import all_flowers_genotype_map
 
 def create_app(test_config=None):
     # create and configure the app
@@ -18,14 +17,12 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
 
     @app.route('/')
     def home():
-        return render_template("home.html", flowers=all_flowers_genotype_map)
+        return render_template("home.html")
+
+    from .api import api
+    app.register_blueprint(api)
 
     return app
