@@ -4,6 +4,41 @@ h1 { font-family: sans-serif; color: #377ba8; margin: 1rem 0; }
 a { color: #377ba8; }
 hr { border: none; border-top: 1px solid lightgray; }
 
+div#app-selection {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #212f3c;
+    padding: 10px;
+}
+div.app-select-element { width: 50%; background-color: #eee; }
+div#app-select-explain { width: 100%;  color: #f8f9f9; }
+
+div#bayes-ux {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    background-color: #212f3c;
+    height: 100%;
+    padding: 10px;
+}
+div.flowerbed {
+    height: 100%;
+    width: 24%;
+    border: 1px solid #000;
+    background-color: #ccc;
+}
+div.flowerbox {
+    width: 100px;
+    height: 100px;
+    background-color: #eee;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid black;
+}
+div#bayes-control-panel {
+    width: 100%;
+}
+
 table#flowerGenetics tr.red { background-color: #cd6155; }
 table#flowerGenetics tr.yellow { background-color: #f9e79f; }
 table#flowerGenetics tr.white { background-color: #f2f3f4; }
@@ -13,7 +48,3 @@ table#flowerGenetics tr.blue { background-color: #aed6f1; }
 table#flowerGenetics tr.purple { background-color: #d7bde2; }
 table#flowerGenetics tr.black { background-color: #85929e; }
 table#flowerGenetics tr.green { background-color: #a9dfbf; }
-
-#nav {display: inline-flex;}
-#nav-title {}
-#flower-select {}

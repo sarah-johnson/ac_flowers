@@ -3,22 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" async></script>
   <title>AC Flowers</title>
 </head>
 <body>
   <h1>Animal Crossing New Horizons Flowers</h1>
-  <p>Data Taken from <a href="https://docs.google.com/spreadsheets/d/11pRCX8G0xGizSYWgVhoUSu7pE-MV7AOprBcgSY1whB4/">ACNH/ACNL Flower Genes</a></p>
-  <div id="nav">
-    <h2>Select a flower:</h2>
-    <select id="flower-select">
-      <option>---</option>
-    </select>
-  </div>
-  <div id="app">
-    <h2 id="current-flower"></h2>
-    <div id="flower-genetics-display"></div>
+  <p>Data Taken from <a href="https://docs.google.com/document/d/1ARIQCUc5YVEd01D7jtJT9EEJF45m07NXhAm4fOpNvCs/">ACNH/ACNL Flower Genes</a>. The link
+  goes to a word doc write up but it links several spreadsheets which contain the full
+  data mine and some interactive tools. Much gratitude to data miners and info compilers. 🙏
+  </p>
+
+  <div id="app-selection">
+    <div id="app-select-explain">To use the app, select both a flower and a module.</div>
+    <div class="app-select-element">
+      <h3>Choose a flower</h3>
+      <select id="flower-select">
+        <option>---</option>
+      </select>
+    </div>
+    <div class="app-select-element">
+      <h3>Choose a module</h3>
+      <select id="module-select">
+        <option value="explore">explore</option>
+        <option value="bayes">bayes</option>
+      </select>
+    </div>
   </div>
 
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  <div id="app">
+    <h2 id="app-title"> </h2>
+    <div id="app-content"> </div>
+  </div>
 </body>
 </html>

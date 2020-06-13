@@ -22,6 +22,10 @@ def create_app(test_config=None):
     def home():
         return render_template("home.html")
 
+    @app.route('/bayes')
+    def bayes():
+        return render_template("bayes_ux.html")
+
     from .api import api
     app.register_blueprint(api)
 
