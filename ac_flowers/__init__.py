@@ -26,6 +26,10 @@ def create_app(test_config=None):
     def bayes():
         return render_template("bayes_ux.html")
 
+    @app.route('/d3')
+    def d3():
+        return render_template("d3_test.html")
+
     from .api import api
     app.register_blueprint(api)
 

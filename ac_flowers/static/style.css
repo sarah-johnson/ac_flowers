@@ -39,6 +39,7 @@ div#bayes-control-panel {
     width: 100%;
 }
 
+table#flowerGenetics thead { background-color: #212f3c; color: #eee; }
 table#flowerGenetics tr.red { background-color: #cd6155; }
 table#flowerGenetics tr.yellow { background-color: #f9e79f; }
 table#flowerGenetics tr.white { background-color: #f2f3f4; }

@@ -17,15 +17,14 @@ def get_flower_info(flower):
     """
     Return all the "baseline" information regarding a given flower
     """
-    flower_info = []
-    seed_flowers = seed_genotypes[flower].values()
-
-    for genotype, phenotype in all_flowers_genotype_map[flower].items():
-        if genotype in seed_flowers:
-            seed = "seed"
-        else:
-            seed = ""
-        flower_info.append((str(genotype), phenotype, seed))
+    flower_info = [
+        {
+            'genotype': str(genotype),
+            'color': phenotype,
+            'seed': 'seed' if genotype in seed_genotypes[flower].values() else ''
+        }
+        for genotype, phenotype in all_flowers_genotype_map[flower].items()
+    ]
 
     return {
         "flower_info": flower_info,

@@ -3,6 +3,4 @@
 
 # Whitelist files and folders that should be in the container
 !ac_flowers
-!static
-!templates
 !requirements.txt

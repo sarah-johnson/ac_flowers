@@ -27,17 +27,17 @@ var updateColorSelectors = (colorList)=> {
     })
 }
 
-var renderBayesUX = (colorList)=> {
+var renderBayesUX = (flowerData)=> {
     var display = document.getElementById("app-content")
     // Get the basic bayes UX HTML template
     fetch("/bayes")
       .then(response=>response.text())
       .then(data=>display.innerHTML = data)
-      .then(_=>updateBayesUX(colorList))
+      .then(_=>updateBayesUX(flowerData))
 }
 
-var updateBayesUX = (colorList)=> {
-    updateColorSelectors(colorList)
+var updateBayesUX = (flowerData)=> {
+    updateColorSelectors(flowerData.colors)
 
     var bayesCalculateButton = document.getElementById('bayes-calculate')
     bayesCalculateButton.addEventListener("click", ()=> {
@@ -55,8 +55,15 @@ var updateBayesUX = (colorList)=> {
     })
 
     var parent1Select = document.getElementById("bayes-parent1-select")
+
     parent1Select.addEventListener("change", (e)=> {
+        parentColor = e.target.value
+        var parentGeneticsContainer = document.getElementById("bayes-parent1-genetic-p")
+        possibleGenotypes = flowerData['flower_info'].filter((row)=> {
+            row['color'] === parentColor
+        })
         console.log("Parent 1 changed to " + e.target.value)
+        console.log("Possible genotypes are " + possibleGenotypes)
     })
 
     var parent2Select = document.getElementById("bayes-parent2-select")
@@ -65,43 +72,62 @@ var updateBayesUX = (colorList)=> {
     })
 }
 
-var updateParentPossibilities = (parent, possibilities)=> {
-    console.log("updating the possibilities of " + parent + " to " + possibilities)
-}
+var renderExploreUX = (flower, flowerData)=> {
+    var data = flowerData['flower_info']
+    var table = d3.select("#app-content").append("table").attr("id", "flowerGenetics")
+    var columns = d3.keys(data[0])
+    var headers = table.append('thead')
+        .append('tr')
+        .selectAll('th')
+        .data(columns).enter()
+        .append('th')
+        .attr("class", "header")
+        .text((column)=> { return column })
 
-// For a given flower, create a table of genotype and phenotype possibilities.
-var createGenotypeTable = (flower, flowerData)=> {
-    var display = document.getElementById("app-content")
-    display.innerHTML = ""
-    
-    var table = document.createElement("TABLE")
-    table.setAttribute("id", "flowerGenetics")
-    var headerRow = document.createElement("TR")
-    table.appendChild(headerRow)
-
-    var columnHeaders = ["Genotype", "Phenotype", "Seed"]
-    columnHeaders.map(column=> {
-        var c = document.createElement("TH")
-        c.innerHTML = column
-        headerRow.appendChild(c)
-    })
-
-    flowerData.map(data_row=> {
-        var row = document.createElement("TR")
-        row.setAttribute("class", data_row[1]) // phenotype
-        table.appendChild(row)
-
-        data_row.map(column=> {
-            var c = document.createElement("TD")
-            c.innerHTML = column
-            row.appendChild(c)
+    var rows = table.append("tbody").selectAll("tr")
+        .data(data)
+        .enter()
+        .append('tr')
+        .attr("class", (row)=> {
+            return row['color']
         })
-    })
 
-    display.appendChild(table)
+    rows.selectAll('td')
+        .data((row)=> {
+            return columns.map((column)=> {
+                return { 'value': row[column], 'name': column};
+            })
+        }).enter()
+        .append('td')
+        .attr('data-th', function (d) {
+            return d.name;
+        })
+        .text((d)=> {
+            return d.value;
+        })
+
+    // provide sort functionality
+    var sortAscending = true
+    headers.on('click', (column)=> {
+        if (sortAscending) {
+            rows.sort((a, b)=> {
+                if (a[column] < b[column]) { return -1 }
+                else if (a[column] > b[column]) { return 1 }
+                else { return 0 }
+            })
+            sortAscending = false
+        } else {
+            rows.sort((a, b)=> {
+                if (a[column] < b[column]) { return 1 }
+                else if (a[column] > b[column]) { return -1 }
+                else { return 0 }
+            })
+            sortAscending = true
+        }
+    })
 }
 
-var setAppContent = (flower, data)=> {
+var setAppContent = (flower, flowerData)=> {
     var moduleSelector = document.getElementById("module-select")
     moduleName = moduleSelector.value
 
@@ -109,10 +135,11 @@ var setAppContent = (flower, data)=> {
     appTitle.innerHTML = moduleName + " " + flower
 
     var display = document.getElementById("app-content")
+    display.innerHTML = "" // always start with a fresh display
     if (moduleName === "explore") {
-        createGenotypeTable(flower, data.flower_info)
+        renderExploreUX(flower, flowerData)
     } else if (moduleName === "bayes") {
-        renderBayesUX(data.colors)
+        renderBayesUX(flowerData)
     } else {
         display.innerHTML = "Unexpected input. :("
     }   
@@ -123,7 +150,7 @@ var initializeApp = ()=> {
     flower = flowerSelector.value
     fetch("/api/" + flower)
       .then(response=>response.json())
-      .then(data=>setAppContent(flower, data))
+      .then(flowerData=>setAppContent(flower, flowerData))
 }
 
 // Populate the initial flower-selector dropdown
