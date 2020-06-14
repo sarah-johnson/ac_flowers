@@ -80,21 +80,20 @@ class TestFlowers(unittest.TestCase):
 
     def test_child_color_probability(self):
         rose = Flower("rose")
-        result = rose.child_color_probability(
-            rose.seed_genotypes["red"], rose.seed_genotypes["white"], "pink"
+        result = rose.create(rose.seeds['red']).child_color_probability(
+            rose.create(rose.seeds['white']), "pink"
         )
         self.assertEqual(result, 0.50)
 
         windflower = Flower("windflower")
-        result = windflower.child_color_probability(
-            windflower.seed_genotypes["red"],
-            windflower.seed_genotypes["orange"],
+        result = windflower.create(windflower.seeds["red"]).child_color_probability(
+            windflower.create(windflower.seeds["orange"]),
             "pink",
         )
         self.assertEqual(result, 1.0)
 
         tulip = Flower("tulip")
-        result = tulip.child_color_probability(
-            tulip.seed_genotypes["yellow"], tulip.seed_genotypes["white"], "black"
+        result = tulip.create(tulip.seeds["yellow"]).child_color_probability(
+            tulip.create(tulip.seeds["white"]), "black"
         )
         self.assertEqual(result, 0.0)

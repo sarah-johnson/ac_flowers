@@ -308,6 +308,11 @@ seed_genotypes = {
 
 
 class Flower:
+    def __init__(self, flower_type):
+        self.flower_type = flower_type
+        self.genotype_map = all_flowers_genotype_map[flower_type]
+        self.seeds = seed_genotypes[flower_type]
+
     @staticmethod
     def get_binary_gene(x):
         genes = {0: (0, 0), 1: (1, 0), 2: (1, 1)}
@@ -326,6 +331,8 @@ class Flower:
         ]
 
     def create(self, genotype):
+        print("self.flower_instance is {}".format(self.flower_type))
+        print("genotype is {}".format(genotype))
         return FlowerInstance(self.flower_type, genotype)
 
     def all_possible_parents(self, target_color, required_parent_color=None):
@@ -340,9 +347,7 @@ class Flower:
         for parent1, parent2 in itertools.combinations_with_replacement(
             all_possible_flowers, 2
         ):
-            p_child = self.child_color_probability(
-                parent1.genotype, parent2.genotype, target_color
-            )
+            p_child = parent1.child_color_probability(parent2, target_color)
             if p_child:
                 if required_parent_color and required_parent_color in (
                     parent1.phenotype,
@@ -362,33 +367,12 @@ class Flower:
         possible_parents = {}
         for parent1 in possible_parent1:
             for parent2 in possible_parent2:
-                p_child = self.child_color_probability(
-                    parent1.genotype, parent2.genotype, target_color
+                p_child = parent1.child_color_probability(
+                    parent2, target_color
                 )
                 if p_child:
                     possible_parents[(parent1, parent2)] = p_child
         return possible_parents
-
-    def child_color_probability(self, parent1_genotype, parent2_genotype, child_color):
-        """
-        Returns the probability of a certain offspring color from two parents
-        of known genotype
-        """
-        parent1 = self.create(parent1_genotype)
-        parent2 = self.create(parent2_genotype)
-        children_with_weights = parent1.all_children_with_weights(parent2)
-        child_colors = {}
-        for child_flower, p in children_with_weights.items():
-            try:
-                child_colors[child_flower.phenotype] += p
-            except KeyError:
-                child_colors[child_flower.phenotype] = p
-        return child_colors.get(child_color, 0)
-
-    def __init__(self, flower_type):
-        self.flower_type = flower_type
-        self.genotype_map = all_flowers_genotype_map[flower_type]
-        self.seed_genotypes = seed_genotypes[flower_type]
 
 
 class FlowerInstance(Flower):
@@ -451,3 +435,17 @@ class FlowerInstance(Flower):
             all_children[child_flower] = p_gene
 
         return all_children
+
+    def child_color_probability(self, other, child_color):
+        """
+        Returns the probability of a certain offspring color from two parents
+        of known genotype
+        """
+        children_with_weights = self.all_children_with_weights(other)
+        child_colors = {}
+        for child_flower, p in children_with_weights.items():
+            try:
+                child_colors[child_flower.phenotype] += p
+            except KeyError:
+                child_colors[child_flower.phenotype] = p
+        return child_colors.get(child_color, 0)

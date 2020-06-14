@@ -73,7 +73,7 @@ def combinations_from_seed(flower_type, generations=1):
     click.echo("Running report on starting from seeds with {}".format(flower_type))
     flower = Flower(flower_type)
     starting_flowers = [
-        flower.create(genes) for genes in flower.seed_genotypes.values()
+        flower.create(genes) for genes in flower.seeds.values()
     ]
 
     available_flowers = starting_flowers
@@ -126,8 +126,8 @@ def bayes(flower_type, color1, color2, observed_children_colors=[]):
 
         for key, p_prior in priors.items():
             p1_genotype, p2_genotype = key
-            p_child = flower.child_color_probability(
-                p1_genotype, p2_genotype, child_color
+            p_child = flower.create(p1_genotype).child_color_probability(
+                flower.create(p2_genotype), child_color
             )
             event_probabilities[key] = p_child
             posteriors[key] *= p_child
