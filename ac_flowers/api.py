@@ -1,7 +1,6 @@
 import logging
 
-from flask import Blueprint, render_template, abort, request
-from jinja2 import TemplateNotFound
+from flask import Blueprint, request
 
 from .flower import all_flowers_genotype_map, seed_genotypes
 from .utilities import bayes
