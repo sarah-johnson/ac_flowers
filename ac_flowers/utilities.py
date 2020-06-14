@@ -1,10 +1,12 @@
 import click
 import itertools
+import logging
 import pandas as pd
 import random
 
 from .flower import Flower, FlowerInstance
 
+logger = logging.getLogger(__name__)
 
 def simulate_breeding(flower_type, genotype_1, genotype_2, n):
     f1 = FlowerInstance(flower_type, genotype_1)
@@ -129,7 +131,11 @@ def bayes(flower_type, color1, color2, observed_children_colors=[]):
             event_probabilities[key] = p_child
             posteriors[key] *= p_child
 
-        posteriors = {k: v / sum(posteriors.values()) for k, v in posteriors.items()}
+        try:
+            posteriors = {k: v / sum(posteriors.values()) for k, v in posteriors.items()}
+        except ZeroDivisionError:
+            logger.critical("The given flower combination is impossible. :(")
+            return []
 
     click.echo(
         "Given {} with parent phenotypes {} {} and known offspring {}, the following genotypes "
@@ -141,3 +147,8 @@ def bayes(flower_type, color1, color2, observed_children_colors=[]):
         if v == 0:
             continue
         click.echo("{}: {:.2f}%".format(k, v * 100))
+
+    return [
+        {"parent1": str(k[0]), "parent2": str(k[1]), "p": round(v, 2),}
+        for k, v in posteriors.items()
+    ]

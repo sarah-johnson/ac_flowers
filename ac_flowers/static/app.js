@@ -70,7 +70,7 @@ var createFlowerTable = (parentElementId, tableData)=> {
     })
 }
 
-var renderBayesUX = (flowerData)=> {
+var renderBayesUX = (currentFlower, flowerData)=> {
     var appContent = d3.select("#app-content")
 
     var aboutBayes = appContent.append("div").attr("id", "about-bayes")
@@ -78,8 +78,16 @@ var renderBayesUX = (flowerData)=> {
         .then(response=>response.text())
         .then(text=> aboutBayes.html(text))
 
+    // Variables to use in calculation
+    var parentColors = {
+        "parent1": "",
+        "parent2": ""
+    }
+    var childrenColors = []
+
     var bayesUX = appContent.append("div").attr("id", "bayes-ux")
 
+    // Add parent elements
     var parents = ["parent1", "parent2"]
     parents.forEach( (flower)=> {
         var flowerDisplayId = "bayes-" + flower + "-display"
@@ -93,6 +101,11 @@ var renderBayesUX = (flowerData)=> {
             .attr("class", "flower-color-list")
             .on("change", ()=> {
                 var color = d3.event.target.value
+
+                // update calc variable
+                parentColors[flower] = color
+
+                // update UI
                 var flowerDisplay = d3.select("#" + flowerDisplayId).html("").attr("class", color)
                 flowerDisplay.append("h4").text("Prior Probabilities for " + flower)
                 var flowerInfo = flowerData["flower_info"].filter((row)=> {
@@ -101,17 +114,9 @@ var renderBayesUX = (flowerData)=> {
                 var prior_p = 1/flowerInfo.length
                 prior_p = prior_p.toFixed(2)
                 flowerInfo = flowerInfo.map((row)=> {
-                    return {
-                        "genotype": row.genotype,
-                        "seed": row.seed,
-                        "p": prior_p
-                    }
+                    return {"genotype": row.genotype, "seed": row.seed, "p": prior_p}
                 })
-
-                createFlowerTable(
-                    "#" + flowerDisplayId,
-                    flowerInfo
-                )
+                createFlowerTable("#" + flowerDisplayId, flowerInfo)
             })
 
         selector.selectAll("option")
@@ -121,77 +126,88 @@ var renderBayesUX = (flowerData)=> {
             .text((color)=> { return color })
     })
 
+    // Add children elements
     var childrenUX = bayesUX.append("div")
         .attr("id", "bayes-children-ux")
-
+    childrenUX.append("h3").text("Add or change offspring:")
     childrenUX.append("button").text("Add Offspring")
         .attr("id", "bayes-add-offspring")
         .on("click", ()=> {
-            console.log("Add Offspring clicked!")
+            var observedColor = window.prompt("What color offspring did you observe?", "");
+            while (!flowerData['colors'].includes(observedColor)) {
+                observedColor = window.prompt(observedColor + " is not a valid color. Please try again:", "")
+            }
+            // Update calc variable
+            childrenColors.push(observedColor)
+
+            // Update UI
+            childrenDisplay.append("div").attr("class", observedColor + " flower-child")
+
         })
 
     childrenUX.append("button").text("Clear Offspring")
         .attr("id", "bayes-clear-offspring")
         .on("click", ()=> {
-            console.log("Clear Offspring clicked!")
+            // Update calc variable
+            childrenColors = []
+
+            // Update UI
+            childrenDisplay.html("")
+            childrenDisplay.append("h4").text("Observed Children")
         })
 
-    childrenDisplay = bayesUX.append("div")
-        .attr("id", "bayes-children-display")
-
+    var childrenDisplay = bayesUX.append("div").attr("id", "bayes-children-display")
     childrenDisplay.append("h4").text("Observed Children")
+
+    var resultsDisplay = bayesUX.append("div").attr("id", "bayes-results-display")
+
+    var formatBayesResults = (data)=> {
+        var resultsDisplay = d3.select("#bayes-results-display").html("")
+        var posteriors = data.posteriors
+        resultsDisplay.append("h4").text("Posterior probabilities for parent combinations")
+        if (posteriors.length > 0) {
+            createFlowerTable("#bayes-results-display", posteriors)
+        } else {
+            resultsDisplay.append("h4").text("No possible paths for given parents/children 😢")
+        }
+    }
 
     appContent.append("button").text("Calculate!")
         .attr("id", "bayes-calculate")
         .on("click", ()=> {
-            console.log("Calculate clicked!")
+            var requestData = {
+                "flower_type": currentFlower,
+                "parent1": parentColors.parent1,
+                "parent2": parentColors.parent2,
+                "children": childrenColors
+            }
+            fetch("api/bayes", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestData)
+            })
+                .then(response=>response.json())
+                .then(data=>formatBayesResults(data))
         })
-
-    //     })
-    // }
-
-    //   <div class="flowerbed" id="bayes-parents-genetic-p">
-    //     Parent Genes Probabilities
-    //     <div id="bayes-parent1-genetic-p"></div>
-    //     <div id="bayes-parent2-genetic-p"></div>
-    //   </div>
-    //   <div class="flowerbed" id="bayes-parents-flowerbed">Parents Colors
-    //     <div class="flowerbox" id="bayes-parent1-flowerbox">
-    //       Choose Parent 1 Color
-    //       <select id="bayes-parent1-select" class="flower-color-list">
-    //         <option>---</option>
-    //       </select>
-    //     </div>
-    //     <div class="flowerbox" id="bayes-parent2-flowerbox">
-    //       Choose Parent 2 Color
-    //       <select id="bayes-parent2-select" class="flower-color-list">
-    //         <option>---</option>
-    //       </select>
-    //     </div>
-    //   </div>
-    //   <div class="flowerbed" id="bayes-observed-offspring-flowerbed">Children Observed Colors</div>
-    //   <div class="flowerbed" id="bayes-future-offspring-p-flowerbed">Future Children Probabilities</div>
-
-    // </div>
 }
 
-var renderExploreUX = (flowerData)=> {
+var renderExploreUX = (currentFlower, flowerData)=> {
     createFlowerTable("#app-content", flowerData['flower_info'])
 }
 
-var setAppContent = (flower, flowerData)=> {
+var setAppContent = (currentFlower, flowerData)=> {
     var moduleSelector = document.getElementById("module-select")
-    moduleName = moduleSelector.value
+    var moduleName = moduleSelector.value
 
     var appTitle = document.getElementById("app-title")
-    appTitle.innerHTML = moduleName + " " + flower
+    appTitle.innerHTML = moduleName + " " + currentFlower
 
     var display = document.getElementById("app-content")
     display.innerHTML = "" // always start with a fresh display
     if (moduleName === "explore") {
-        renderExploreUX(flowerData)
+        renderExploreUX(currentFlower, flowerData)
     } else if (moduleName === "bayes") {
-        renderBayesUX(flowerData)
+        renderBayesUX(currentFlower, flowerData)
     } else {
         display.innerHTML = "Unexpected input. :("
     }   
@@ -199,10 +215,10 @@ var setAppContent = (flower, flowerData)=> {
 
 var initializeApp = ()=> {
     var flowerSelector = document.getElementById("flower-select")
-    var flower = flowerSelector.value
-    fetch("/api/" + flower)
+    var currentFlower = flowerSelector.value
+    fetch("/api/" + currentFlower)
         .then(response=>response.json())
-        .then(flowerData=>setAppContent(flower, flowerData))
+        .then(flowerData=>setAppContent(currentFlower, flowerData))
 }
 
 // Populate the initial flower-selector dropdown
@@ -210,14 +226,6 @@ fetch("/api/list-flowers")
     .then(response=>response.json())
     .then(data=>populateFlowerSelector(data.flowers))
 
-// Trigger actions when the flower-selector dropdown is changed
-var flowerSelector = document.getElementById("flower-select")
-flowerSelector.addEventListener("change", (e)=> {
-    initializeApp()
-})
-
-// Trigger actions when the module list is changed
-var moduleSelector = document.getElementById("module-select")
-moduleSelector.addEventListener("change", (e)=> {
-    initializeApp()
-})
+// Trigger actions when the flower-selector dropdown or module list are changed
+d3.select("#flower-select").on("change", ()=> {initializeApp()})
+d3.select("#module-select").on("change", ()=> {initializeApp()})

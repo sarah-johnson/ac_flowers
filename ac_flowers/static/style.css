@@ -46,6 +46,17 @@ div#bayes-children-ux {
 div#bayes-children-display {
     grid-column: choice-display / results-display;
     grid-row: children / bottom;
+    display: grid;
+    grid-gap: 1rem;
+}
+div#bayes-results-display {
+  grid-column: results-display / end;
+  grid-row: parent1 / bottom;
+}
+
+div.flower-child {
+    width: 75px;
+    height: 75px;
 }
 
 table.flower-genetics thead { background-color: #212f3c; color: #eee; }

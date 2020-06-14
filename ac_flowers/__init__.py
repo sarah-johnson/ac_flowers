@@ -1,6 +1,10 @@
+import logging
 import os
 
 from flask import Flask, render_template
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+logger = logging.getLogger(__name__)
 
 
 def create_app(test_config=None):
