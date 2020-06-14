@@ -8,6 +8,7 @@ from .flower import Flower, FlowerInstance
 
 logger = logging.getLogger(__name__)
 
+
 def simulate_breeding(flower_type, genotype_1, genotype_2, n):
     f1 = FlowerInstance(flower_type, genotype_1)
     f2 = FlowerInstance(flower_type, genotype_2)
@@ -132,7 +133,9 @@ def bayes(flower_type, color1, color2, observed_children_colors=[]):
             posteriors[key] *= p_child
 
         try:
-            posteriors = {k: v / sum(posteriors.values()) for k, v in posteriors.items()}
+            posteriors = {
+                k: v / sum(posteriors.values()) for k, v in posteriors.items()
+            }
         except ZeroDivisionError:
             logger.critical("The given flower combination is impossible. :(")
             return []

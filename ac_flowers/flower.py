@@ -451,4 +451,3 @@ class FlowerInstance(Flower):
             all_children[child_flower] = p_gene
 
         return all_children
-

@@ -1,7 +1,12 @@
 import itertools
 import unittest
 
-from ac_flowers.flower import Flower, FlowerInstance, all_flowers_genotype_map, seed_genotypes
+from ac_flowers.flower import (
+    Flower,
+    FlowerInstance,
+    all_flowers_genotype_map,
+    seed_genotypes,
+)
 
 
 class TestFlowers(unittest.TestCase):
