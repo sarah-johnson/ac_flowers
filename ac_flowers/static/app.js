@@ -80,41 +80,37 @@ var renderBayesUX = (flowerData)=> {
 
     var bayesUX = appContent.append("div").attr("id", "bayes-ux")
 
-    bayesUX.append("button").text("Calculate!")
-        .attr("id", "bayes-calculate")
-        .on("click", ()=> {
-            console.log("Calculate clicked!")
-        })
-
-    bayesUX.append("button").text("Add Offspring")
-        .attr("id", "bayes-add-offspring")
-        .on("click", ()=> {
-            console.log("Add Offspring clicked!")
-        })
-
-    bayesUX.append("button").text("Clear Offspring")
-        .attr("id", "bayes-clear-offspring")
-        .on("click", ()=> {
-            console.log("Clear Offspring clicked!")
-        })
-
     var parents = ["parent1", "parent2"]
     parents.forEach( (flower)=> {
         var flowerDisplayId = "bayes-" + flower + "-display"
         var flowerDisplay = bayesUX.append("div").attr("id", flowerDisplayId)
 
-        var selector = bayesUX.append("select")
+        var flowerUXId = "bayes-" + flower + "-ux"
+        var flowerUX = bayesUX.append("div").attr("id", flowerUXId)
+        flowerUX.append("h3").text("Select " + flower + " color:")
+        var selector = flowerUX.append("select")
             .attr("id", "bayes-" + flower + "-select")
             .attr("class", "flower-color-list")
             .on("change", ()=> {
-                color = d3.event.target.value
-                console.log("Changed " + flower + " to " + color)
-                d3.select("#" + flowerDisplayId).html("")
+                var color = d3.event.target.value
+                var flowerDisplay = d3.select("#" + flowerDisplayId).html("").attr("class", color)
+                flowerDisplay.append("h4").text("Prior Probabilities for " + flower)
+                var flowerInfo = flowerData["flower_info"].filter((row)=> {
+                    return row.color === color
+                })
+                var prior_p = 1/flowerInfo.length
+                prior_p = prior_p.toFixed(2)
+                flowerInfo = flowerInfo.map((row)=> {
+                    return {
+                        "genotype": row.genotype,
+                        "seed": row.seed,
+                        "p": prior_p
+                    }
+                })
+
                 createFlowerTable(
                     "#" + flowerDisplayId,
-                    flowerData['flower_info'].filter((row)=> {
-                        return row['color'] === color
-                    })
+                    flowerInfo
                 )
             })
 
@@ -124,6 +120,32 @@ var renderBayesUX = (flowerData)=> {
             .attr("value", (color)=> { return color })
             .text((color)=> { return color })
     })
+
+    var childrenUX = bayesUX.append("div")
+        .attr("id", "bayes-children-ux")
+
+    childrenUX.append("button").text("Add Offspring")
+        .attr("id", "bayes-add-offspring")
+        .on("click", ()=> {
+            console.log("Add Offspring clicked!")
+        })
+
+    childrenUX.append("button").text("Clear Offspring")
+        .attr("id", "bayes-clear-offspring")
+        .on("click", ()=> {
+            console.log("Clear Offspring clicked!")
+        })
+
+    childrenDisplay = bayesUX.append("div")
+        .attr("id", "bayes-children-display")
+
+    childrenDisplay.append("h4").text("Observed Children")
+
+    appContent.append("button").text("Calculate!")
+        .attr("id", "bayes-calculate")
+        .on("click", ()=> {
+            console.log("Calculate clicked!")
+        })
 
     //     })
     // }

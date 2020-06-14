@@ -15,34 +15,47 @@ div#app-select-explain { width: 100%;  color: #f8f9f9; }
 
 div#bayes-ux {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: [ux] 25% [choice-display] 25% [results-display] auto [end];
+    grid-template-rows: [parent1] auto [parent2] auto [children] auto [bottom];
+
     grid-gap: 1rem;
-    background-color: #212f3c;
     height: 100%;
     padding: 10px;
 }
-div.flowerbed {
-    height: 100%;
-    width: 24%;
-    border: 1px solid #000;
-    background-color: #ccc;
+
+div#bayes-parent1-ux {
+  grid-column: ux / choice-display;
+  grid-row: parent1 / parent2;
 }
-div.flowerbox {
-    width: 100px;
-    height: 100px;
-    background-color: #eee;
-    text-align: center;
-    vertical-align: middle;
-    border: 1px solid black;
+div#bayes-parent1-display {
+  grid-column: choice-display / results-display;
+  grid-row: parent1 / parent2;
+}
+div#bayes-parent2-ux {
+  grid-column: ux / choice-display;
+  grid-row: parent2 / children;
+}
+div#bayes-parent2-display {
+  grid-column: choice-display / results-display;
+  grid-row: parent2 / children;
+}
+div#bayes-children-ux {
+    grid-column: ux / choice-display;
+    grid-row: children / bottom;
+}
+div#bayes-children-display {
+    grid-column: choice-display / results-display;
+    grid-row: children / bottom;
 }
 
 table.flower-genetics thead { background-color: #212f3c; color: #eee; }
-table.flower-genetics tr.red { background-color: #cd6155; }
-table.flower-genetics tr.yellow { background-color: #f9e79f; }
-table.flower-genetics tr.white { background-color: #f2f3f4; }
-table.flower-genetics tr.pink { background-color: #fadbd8; }
-table.flower-genetics tr.orange { background-color: #f5cba7; }
-table.flower-genetics tr.blue { background-color: #aed6f1; }
-table.flower-genetics tr.purple { background-color: #d7bde2; }
-table.flower-genetics tr.black { background-color: #85929e; }
-table.flower-genetics tr.green { background-color: #a9dfbf; }
+
+.red { background-color: #cd6155; }
+.yellow { background-color: #f9e79f; }
+.white { background-color: #f2f3f4; }
+.pink { background-color: #fadbd8; }
+.orange { background-color: #f5cba7; }
+.blue { background-color: #aed6f1; }
+.purple { background-color: #d7bde2; }
+.black { background-color: #85929e; }
+.green { background-color: #a9dfbf; }
