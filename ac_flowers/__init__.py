@@ -17,18 +17,9 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-
     @app.route('/')
     def home():
         return render_template("home.html")
-
-    @app.route('/bayes')
-    def bayes():
-        return render_template("bayes_ux.html")
-
-    @app.route('/d3')
-    def d3():
-        return render_template("d3_test.html")
 
     from .api import api
     app.register_blueprint(api)

@@ -14,9 +14,9 @@ div.app-select-element { width: 50%; background-color: #eee; }
 div#app-select-explain { width: 100%;  color: #f8f9f9; }
 
 div#bayes-ux {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 1rem;
     background-color: #212f3c;
     height: 100%;
     padding: 10px;
@@ -34,9 +34,6 @@ div.flowerbox {
     text-align: center;
     vertical-align: middle;
     border: 1px solid black;
-}
-div#bayes-control-panel {
-    width: 100%;
 }
 
 table.flower-genetics thead { background-color: #212f3c; color: #eee; }

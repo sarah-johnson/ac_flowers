@@ -13,28 +13,11 @@ var populateFlowerSelector = (flowerList)=> {
     })
 }
 
-var updateColorSelectors = (colorList)=> {
-    var colorSelectors = document.getElementsByClassName("flower-color-list")
-    Array.from(colorSelectors).forEach((colorSelector) => {
-        colorSelector.innerHTML = ""
-        var defaultOption = document.createElement("option")
-        defaultOption.innerHTML = "Choose a color"
-        defaultOption.value = 0
-        colorSelector.appendChild(defaultOption)
-        colorList.map(color=> {
-            var option = document.createElement("option")
-            option.innerHTML = color
-            option.value = color
-            colorSelector.appendChild(option)
-        })
-
-    })
-}
-
 var createFlowerTable = (parentElementId, tableData)=> {
     var table = d3.select(parentElementId)
         .append("table")
         .attr("class", "flower-genetics")
+
     var columns = d3.keys(tableData[0])
     var headers = table.append('thead')
         .append('tr')
@@ -87,59 +70,90 @@ var createFlowerTable = (parentElementId, tableData)=> {
     })
 }
 
-var updateBayesParent = (color, number)=> {
-
-}
-
-var updateBayesUX = (flowerData)=> {
-    d3.select("#bayes-calculate").on("click", ()=> {
-        console.log("Calculate clicked!")
-    })
-
-    d3.select("#bayes-add-offspring").on("click", ()=> {
-        console.log("Add Offspring clicked!")
-    })
-
-    d3.select("#bayes-clear-offspring").on("click", ()=> {
-        console.log("Clear Offspring clicked!")
-    })
-
-    d3.select("#bayes-parent1-select").on("change", ()=> {
-        parentColor = d3.event.target.value
-        d3.select("#bayes-parent1-genetic-p").html("")
-        createFlowerTable(
-            "#bayes-parent1-genetic-p",
-            flowerData['flower_info'].filter((row)=> {
-                return row['color'] === parentColor
-            })
-        )
-    })
-
-    d3.select("#bayes-parent2-select").on("change", ()=> {
-        parentColor = d3.event.target.value
-        d3.select("#bayes-parent2-genetic-p").html("")
-        createFlowerTable(
-            "#bayes-parent2-genetic-p",
-            flowerData['flower_info'].filter((row)=> {
-                return row['color'] === parentColor
-            })
-        )
-    })
-
-    updateColorSelectors(flowerData.colors)
-}
-
 var renderBayesUX = (flowerData)=> {
-    var display = document.getElementById("app-content")
-    // Get the basic bayes UX HTML template
-    fetch("/bayes")
-      .then(response=>response.text())
-      .then(data=>display.innerHTML = data)
-      .then(_=>updateBayesUX(flowerData))
+    var appContent = d3.select("#app-content")
+
+    var aboutBayes = appContent.append("div").attr("id", "about-bayes")
+    fetch("static/about_bayes.html")
+        .then(response=>response.text())
+        .then(text=> aboutBayes.html(text))
+
+    var bayesUX = appContent.append("div").attr("id", "bayes-ux")
+
+    bayesUX.append("button").text("Calculate!")
+        .attr("id", "bayes-calculate")
+        .on("click", ()=> {
+            console.log("Calculate clicked!")
+        })
+
+    bayesUX.append("button").text("Add Offspring")
+        .attr("id", "bayes-add-offspring")
+        .on("click", ()=> {
+            console.log("Add Offspring clicked!")
+        })
+
+    bayesUX.append("button").text("Clear Offspring")
+        .attr("id", "bayes-clear-offspring")
+        .on("click", ()=> {
+            console.log("Clear Offspring clicked!")
+        })
+
+    var parents = ["parent1", "parent2"]
+    parents.forEach( (flower)=> {
+        var flowerDisplayId = "bayes-" + flower + "-display"
+        var flowerDisplay = bayesUX.append("div").attr("id", flowerDisplayId)
+
+        var selector = bayesUX.append("select")
+            .attr("id", "bayes-" + flower + "-select")
+            .attr("class", "flower-color-list")
+            .on("change", ()=> {
+                color = d3.event.target.value
+                console.log("Changed " + flower + " to " + color)
+                d3.select("#" + flowerDisplayId).html("")
+                createFlowerTable(
+                    "#" + flowerDisplayId,
+                    flowerData['flower_info'].filter((row)=> {
+                        return row['color'] === color
+                    })
+                )
+            })
+
+        selector.selectAll("option")
+            .data(["Choose " + flower].concat(flowerData.colors)).enter()
+            .append("option")
+            .attr("value", (color)=> { return color })
+            .text((color)=> { return color })
+    })
+
+    //     })
+    // }
+
+    //   <div class="flowerbed" id="bayes-parents-genetic-p">
+    //     Parent Genes Probabilities
+    //     <div id="bayes-parent1-genetic-p"></div>
+    //     <div id="bayes-parent2-genetic-p"></div>
+    //   </div>
+    //   <div class="flowerbed" id="bayes-parents-flowerbed">Parents Colors
+    //     <div class="flowerbox" id="bayes-parent1-flowerbox">
+    //       Choose Parent 1 Color
+    //       <select id="bayes-parent1-select" class="flower-color-list">
+    //         <option>---</option>
+    //       </select>
+    //     </div>
+    //     <div class="flowerbox" id="bayes-parent2-flowerbox">
+    //       Choose Parent 2 Color
+    //       <select id="bayes-parent2-select" class="flower-color-list">
+    //         <option>---</option>
+    //       </select>
+    //     </div>
+    //   </div>
+    //   <div class="flowerbed" id="bayes-observed-offspring-flowerbed">Children Observed Colors</div>
+    //   <div class="flowerbed" id="bayes-future-offspring-p-flowerbed">Future Children Probabilities</div>
+
+    // </div>
 }
 
-var renderExploreUX = (flower, flowerData)=> {
-    var data = flowerData['flower_info']
+var renderExploreUX = (flowerData)=> {
     createFlowerTable("#app-content", flowerData['flower_info'])
 }
 
@@ -153,7 +167,7 @@ var setAppContent = (flower, flowerData)=> {
     var display = document.getElementById("app-content")
     display.innerHTML = "" // always start with a fresh display
     if (moduleName === "explore") {
-        renderExploreUX(flower, flowerData)
+        renderExploreUX(flowerData)
     } else if (moduleName === "bayes") {
         renderBayesUX(flowerData)
     } else {
@@ -163,16 +177,16 @@ var setAppContent = (flower, flowerData)=> {
 
 var initializeApp = ()=> {
     var flowerSelector = document.getElementById("flower-select")
-    flower = flowerSelector.value
+    var flower = flowerSelector.value
     fetch("/api/" + flower)
-      .then(response=>response.json())
-      .then(flowerData=>setAppContent(flower, flowerData))
+        .then(response=>response.json())
+        .then(flowerData=>setAppContent(flower, flowerData))
 }
 
 // Populate the initial flower-selector dropdown
 fetch("/api/list-flowers")
-  .then(response=>response.json())
-  .then(data=>populateFlowerSelector(data.flowers))
+    .then(response=>response.json())
+    .then(data=>populateFlowerSelector(data.flowers))
 
 // Trigger actions when the flower-selector dropdown is changed
 var flowerSelector = document.getElementById("flower-select")
