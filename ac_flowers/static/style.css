@@ -15,39 +15,29 @@ div#app-select-explain { width: 100%;  color: #f8f9f9; }
 
 div#bayes-ux {
     display: grid;
-    grid-template-columns: [ux] 25% [choice-display] 25% [results-display] auto [end];
-    grid-template-rows: [parent1] auto [parent2] auto [children] auto [bottom];
+    grid-template-columns: [ux] 25% [results-display] auto [end];
+    grid-template-rows: [parent1] 20% [parent2] 20% [target] 20% [children] auto [bottom];
 
     grid-gap: 1rem;
     height: 100%;
     padding: 10px;
 }
 
-div#bayes-parent1-ux {
-  grid-column: ux / choice-display;
+div#bayes-parent1 {
+  grid-column: ux / results-display;
   grid-row: parent1 / parent2;
 }
-div#bayes-parent1-display {
-  grid-column: choice-display / results-display;
-  grid-row: parent1 / parent2;
+div#bayes-parent2 {
+  grid-column: ux / results-display;
+  grid-row: parent2 / target;
 }
-div#bayes-parent2-ux {
-  grid-column: ux / choice-display;
-  grid-row: parent2 / children;
+div#bayes-target {
+  grid-column: ux / results-display;
+  grid-row: target / children;
 }
-div#bayes-parent2-display {
-  grid-column: choice-display / results-display;
-  grid-row: parent2 / children;
-}
-div#bayes-children-ux {
-    grid-column: ux / choice-display;
+div#bayes-children {
+    grid-column: ux / results-display;
     grid-row: children / bottom;
-}
-div#bayes-children-display {
-    grid-column: choice-display / results-display;
-    grid-row: children / bottom;
-    display: grid;
-    grid-gap: 1rem;
 }
 div#bayes-results-display {
   grid-column: results-display / end;

@@ -331,8 +331,6 @@ class Flower:
         ]
 
     def create(self, genotype):
-        print("self.flower_instance is {}".format(self.flower_type))
-        print("genotype is {}".format(genotype))
         return FlowerInstance(self.flower_type, genotype)
 
     def all_possible_parents(self, target_color, required_parent_color=None):
@@ -407,6 +405,9 @@ class FlowerInstance(Flower):
         return FlowerInstance(flower_type=self.flower_type, genotype=child_genes)
 
     def all_children_with_weights(self, other):
+        """
+        Returns.... sometihng or other. Working on document this.
+        """
         assert (
             self.flower_type == other.flower_type
         ), "Two flowers of different types cannot breed"

@@ -22,8 +22,3 @@ ac_flowers.utilities.bayes('hyacinth', 'blue', 'blue', ['blue', 'blue', 'blue'])
 ```
 
 There is also a flask app and UI which is under development
-
-# Dev Roadmap
- - Bayes UI needs colors on the posteriors table
- - Bayes UI should also show "possible future offspring" and allow you to select a "target color" to work backwards from
- - build a module for simulating genetic diversity from starting seeds

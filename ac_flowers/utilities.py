@@ -106,6 +106,10 @@ def genotypes_for_phenotype(flower_type, color):
 
 
 def bayes(flower_type, color1, color2, observed_children_colors=[]):
+    """
+    Returns a list of dictionaries parent1 genotype, parent2 genotype, and
+    the posterior probability of that pair given the observed children.
+    """
     flower = Flower(flower_type)
     possible_parent1 = flower.all_possible_genotypes(color1)
     possible_parent2 = flower.all_possible_genotypes(color2)
@@ -151,7 +155,4 @@ def bayes(flower_type, color1, color2, observed_children_colors=[]):
             continue
         click.echo("{}: {:.2f}%".format(k, v * 100))
 
-    return [
-        {"parent1": str(k[0]), "parent2": str(k[1]), "p": round(v, 2),}
-        for k, v in posteriors.items()
-    ]
+    return posteriors

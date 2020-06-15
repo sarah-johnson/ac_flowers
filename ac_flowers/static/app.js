@@ -79,22 +79,20 @@ var renderBayesUX = (currentFlower, flowerData)=> {
         .then(text=> aboutBayes.html(text))
 
     // Variables to use in calculation
-    var parentColors = {
+    var bayesFlowerColors = {
         "parent1": "",
-        "parent2": ""
+        "parent2": "",
+        "target": "",
     }
     var childrenColors = []
 
     var bayesUX = appContent.append("div").attr("id", "bayes-ux")
 
     // Add parent elements
-    var parents = ["parent1", "parent2"]
-    parents.forEach( (flower)=> {
-        var flowerDisplayId = "bayes-" + flower + "-display"
-        var flowerDisplay = bayesUX.append("div").attr("id", flowerDisplayId)
+    Object.keys(bayesFlowerColors).forEach( (flower)=> {
+        var flowerDisplayId = "bayes-" + flower + '-display'
 
-        var flowerUXId = "bayes-" + flower + "-ux"
-        var flowerUX = bayesUX.append("div").attr("id", flowerUXId)
+        var flowerUX = bayesUX.append("div").attr("id", "bayes-" + flower)
         flowerUX.append("h3").text("Select " + flower + " color:")
         var selector = flowerUX.append("select")
             .attr("id", "bayes-" + flower + "-select")
@@ -103,7 +101,7 @@ var renderBayesUX = (currentFlower, flowerData)=> {
                 var color = d3.event.target.value
 
                 // update calc variable
-                parentColors[flower] = color
+                bayesFlowerColors[flower] = color
 
                 // update UI
                 var flowerDisplay = d3.select("#" + flowerDisplayId).html("").attr("class", color)
@@ -124,6 +122,8 @@ var renderBayesUX = (currentFlower, flowerData)=> {
             .append("option")
             .attr("value", (color)=> { return color })
             .text((color)=> { return color })
+
+        var flowerDisplay = flowerUX.append("div").attr("id", flowerDisplayId)
     })
 
     // Add children elements
@@ -156,10 +156,22 @@ var renderBayesUX = (currentFlower, flowerData)=> {
             childrenDisplay.append("h4").text("Observed Children")
         })
 
-    var childrenDisplay = bayesUX.append("div").attr("id", "bayes-children-display")
+    var childrenDisplay = childrenUX.append("div").attr("id", "bayes-children-display")
     childrenDisplay.append("h4").text("Observed Children")
 
+    // Fetch and format results
     var resultsDisplay = bayesUX.append("div").attr("id", "bayes-results-display")
+
+    // Given a genotype return the phenotype
+    var assignColor = (tableElement)=> {
+        var filtered = flowerData.flower_info.filter((row)=> {
+            return row.genotype === tableElement.value
+        })
+        if (filtered.length > 0) {
+            return filtered.pop().color
+        }
+        return ""
+    }
 
     var formatBayesResults = (data)=> {
         var resultsDisplay = d3.select("#bayes-results-display").html("")
@@ -167,6 +179,18 @@ var renderBayesUX = (currentFlower, flowerData)=> {
         resultsDisplay.append("h4").text("Posterior probabilities for parent combinations")
         if (posteriors.length > 0) {
             createFlowerTable("#bayes-results-display", posteriors)
+
+            // Add colors to the parent posteriors table
+            resultsDisplay.select("table")
+                .select("tbody")
+                .selectAll("tr")
+                .selectAll("td")
+                .attr("class", (cell)=> {
+                    return assignColor(cell)
+                })
+            if (data.total_target_p) {
+                resultsDisplay.append("h1").text("Total Target Flower Probability is " + data.total_target_p)
+            }
         } else {
             resultsDisplay.append("h4").text("No possible paths for given parents/children 😢")
         }
@@ -177,9 +201,12 @@ var renderBayesUX = (currentFlower, flowerData)=> {
         .on("click", ()=> {
             var requestData = {
                 "flower_type": currentFlower,
-                "parent1": parentColors.parent1,
-                "parent2": parentColors.parent2,
+                "parent1": bayesFlowerColors.parent1,
+                "parent2": bayesFlowerColors.parent2,
                 "children": childrenColors
+            }
+            if (bayesFlowerColors.target.length > 0) {
+                requestData["target_color"] = bayesFlowerColors.target
             }
             fetch("api/bayes", {
                 method: 'POST',
